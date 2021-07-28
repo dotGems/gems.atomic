@@ -1,7 +1,6 @@
 #include <string>
 #include <atomicassets/atomicassets.hpp>
 
-namespace gems {
 namespace atomic {
 
 struct nft {
@@ -55,4 +54,3 @@ atomicassets::assets_s get_assets( const name owner, const uint64_t asset_id )
 }
 
 }   // end atomic
-}   // end gems
