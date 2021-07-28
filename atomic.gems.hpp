@@ -1,8 +1,13 @@
 #include <string>
-#include <eosio.token/eosio.token.hpp>
+#include <atomicassets/atomicassets.hpp>
 
 namespace gems {
 namespace atomic {
+
+struct nft {
+    int32_t template_id;
+    name collection_name;
+};
 
 void transfer_nft( const name from, const name to, const vector<uint64_t> asset_ids, const string memo )
 {
