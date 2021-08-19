@@ -63,6 +63,35 @@ atomicassets::assets_s get_asset( const name owner, const uint64_t asset_id )
     return _assets.get( asset_id, "get_asset: `asset_id` does not belong to `owner`" );
 }
 
+uint32_t get_issued_supply( const name collection_name, const int32_t template_id )
+{
+    return get_template( collection_name, template_id ).issued_supply;
+}
+
+name get_collection_name( const name owner, const uint64_t asset_id )
+{
+    atomicassets::assets_t _assets( ATOMIC_ASSETS_CONTRACT, owner.value );
+    auto itr = _assets.find( asset_id );
+    if ( itr != _assets.end() ) return itr->collection_name;
+    return {};
+}
+
+int32_t get_template_id( const name owner, const uint64_t asset_id )
+{
+    atomicassets::assets_t _assets( ATOMIC_ASSETS_CONTRACT, owner.value );
+    auto itr = _assets.find( asset_id );
+    if ( itr != _assets.end() ) return itr->template_id;
+    return 0;
+}
+
+name get_schema_name( const name owner, const uint64_t asset_id )
+{
+    atomicassets::assets_t _assets( ATOMIC_ASSETS_CONTRACT, owner.value );
+    auto itr = _assets.find( asset_id );
+    if ( itr != _assets.end() ) return itr->schema_name;
+    return {};
+}
+
 uint64_t get_next_asset_id( )
 {
     atomicassets::config_t config( ATOMIC_ASSETS_CONTRACT, ATOMIC_ASSETS_CONTRACT.value );
