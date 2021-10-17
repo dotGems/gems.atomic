@@ -51,6 +51,12 @@ atomicassets::collections_s get_collection( const name collection_name )
     return _collections.get( collection_name.value, "get_collection: `collection_name` does not exist" );
 }
 
+atomicassets::schemas_s get_schema( const name collection_name, const name schema_name )
+{
+    atomicassets::schemas_t _schemas( ATOMIC_ASSETS_CONTRACT, collection_name.value );
+    return _schemas.get( schema_name.value, "get_schema: `schema_name` does not exist for `collection_name`" );
+}
+
 atomicassets::templates_s get_template( const name collection_name, const int32_t template_id )
 {
     atomicassets::templates_t _templates( ATOMIC_ASSETS_CONTRACT, collection_name.value );
