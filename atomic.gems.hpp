@@ -69,6 +69,14 @@ atomicassets::assets_s get_asset( const name owner, const uint64_t asset_id )
     return _assets.get( asset_id, "get_asset: `asset_id` does not belong to `owner`" );
 }
 
+atomicdata::ATOMIC_ATTRIBUTE get_template_attribute( const name collection_name, const name schema_name, const int32_t template_id, const string key )
+{
+    vector<atomicdata::FORMAT> format = atomic::get_schema( collection_name, schema_name ).format;
+    vector<uint8_t> data = atomic::get_template( collection_name, template_id ).immutable_serialized_data;
+    ATTRIBUTE_MAP deserialized = atomicdata::deserialize( data, format );
+    return deserialized.at(key);
+}
+
 name get_collection_name( const name owner, const uint64_t asset_id )
 {
     atomicassets::assets_t _assets( ATOMIC_ASSETS_CONTRACT, owner.value );
