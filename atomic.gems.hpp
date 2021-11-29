@@ -1,3 +1,5 @@
+#pragma once
+
 #define assert(condition) ((void)0)
 
 #include <string>
@@ -71,12 +73,58 @@ atomicassets::assets_s get_asset( const name owner, const uint64_t asset_id )
     return _assets.get( asset_id, "get_asset: `asset_id` does not belong to `owner`" );
 }
 
-atomicdata::ATOMIC_ATTRIBUTE get_template_attribute( const name collection_name, const name schema_name, const int32_t template_id, const string key )
+atomic::nft get_nft( const name owner, const uint64_t asset_id )
+{
+    atomicassets::assets_s my_asset = get_asset( owner, asset_id );
+    return atomic::nft{ my_asset.collection_name, my_asset.template_id };
+}
+
+atomicdata::ATTRIBUTE_MAP get_template_immutable( const atomicassets::assets_s& asset )
+{
+    const name collection_name = asset.collection_name;
+    const name schema_name = asset.schema_name;
+    const int32_t template_id = asset.template_id;
+
+    vector<atomicdata::FORMAT> format = atomic::get_schema( collection_name, schema_name ).format;
+    vector<uint8_t> data = atomic::get_template( collection_name, template_id ).immutable_serialized_data;
+    return atomicdata::deserialize( data, format );
+}
+
+atomicdata::ATTRIBUTE_MAP get_template_immutable( const name collection_name, const name schema_name, const int32_t template_id )
 {
     vector<atomicdata::FORMAT> format = atomic::get_schema( collection_name, schema_name ).format;
     vector<uint8_t> data = atomic::get_template( collection_name, template_id ).immutable_serialized_data;
-    ATTRIBUTE_MAP deserialized = atomicdata::deserialize( data, format );
-    return deserialized.at(key);
+    return atomicdata::deserialize( data, format );
+}
+
+atomicdata::ATTRIBUTE_MAP get_asset_immutable( const atomicassets::assets_s& asset )
+{
+    vector<atomicdata::FORMAT> format = atomic::get_schema( asset.collection_name, asset.schema_name ).format;
+    return atomicdata::deserialize( asset.immutable_serialized_data, format );
+}
+
+atomicdata::ATTRIBUTE_MAP get_asset_mutable( const atomicassets::assets_s& asset )
+{
+    vector<atomicdata::FORMAT> format = atomic::get_schema( asset.collection_name, asset.schema_name ).format;
+    return atomicdata::deserialize( asset.mutable_serialized_data, format );
+}
+
+name tolower( const string str )
+{
+    string result;
+    for ( char c : str )
+    {
+        result += std::tolower(c);
+    }
+    return name{result};
+}
+
+string attribute_to_string( const ATTRIBUTE_MAP& data, const string key ) {
+    return std::get<string>( data.at(key) );
+}
+
+name attribute_to_name( const ATTRIBUTE_MAP& data, const string key ) {
+    return name{ tolower( std::get<string>( data.at(key) )) };
 }
 
 name get_collection_name( const name owner, const uint64_t asset_id )
@@ -107,6 +155,35 @@ uint64_t get_next_asset_id( )
 {
     atomicassets::config_t config( ATOMIC_ASSETS_CONTRACT, ATOMIC_ASSETS_CONTRACT.value );
     return config.get().asset_counter;
+}
+
+name get_author( const atomic::nft id )
+{
+    return get_collection( id.collection_name ).author;
+}
+
+name get_author( const name collection_name )
+{
+    return get_collection( collection_name ).author;
+}
+
+set<name> vector_to_set( const vector<name> values )
+{
+    set<name> items;
+    for ( name value : values ) {
+        items.insert( value );
+    }
+    return items;
+}
+
+set<name> get_authorized_accounts( const atomic::nft id )
+{
+    return vector_to_set(get_collection( id.collection_name ).authorized_accounts);
+}
+
+set<name> get_authorized_accounts( const name collection_name )
+{
+    return vector_to_set(get_collection( collection_name ).authorized_accounts);
 }
 
 uint32_t get_issued_supply( const name collection_name, const int32_t template_id )
