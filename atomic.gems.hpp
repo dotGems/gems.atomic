@@ -196,4 +196,14 @@ uint32_t get_max_supply( const name collection_name, const int32_t template_id )
     return get_template( collection_name, template_id ).max_supply;
 }
 
+bool attribute_exists( const vector<FORMAT> data, const FORMAT& format )
+{
+    const auto res = std::find_if(
+        data.begin(),
+        data.end(),
+        [&](const auto& attr) { return attr.name == format.name && attr.type == format.type;}
+    );
+    return res != data.end();
+}
+
 }   // end atomic
