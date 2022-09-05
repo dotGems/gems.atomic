@@ -55,6 +55,11 @@ atomicassets::collections_s get_collection( const name collection_name )
     return _collections.get( collection_name.value, "get_collection: `collection_name` does not exist" );
 }
 
+double get_market_fee( const name collection_name )
+{
+    return get_collection( collection_name ).market_fee;
+}
+
 atomicassets::schemas_s get_schema( const name collection_name, const name schema_name )
 {
     atomicassets::schemas_t _schemas( ATOMIC_ASSETS_CONTRACT, collection_name.value );
@@ -220,6 +225,24 @@ bool attribute_exists( const vector<FORMAT> data, const FORMAT& format )
         [&](const auto& attr) { return attr.name == format.name && attr.type == format.type;}
     );
     return res != data.end();
+}
+
+bool attribute_exists( const name collection_name, const name schema_name, const string attribute )
+{
+    vector<atomicdata::FORMAT> format = atomic::get_schema( collection_name, schema_name ).format;
+    for ( const auto row : format ) {
+        if ( row.name == attribute ) return true;
+    }
+    return false;
+}
+
+bool has_attribute( const name collection_name, const name schema_name, const string attribute )
+{
+    vector<atomicdata::FORMAT> format = atomic::get_schema( collection_name, schema_name ).format;
+    for ( const auto row : format ) {
+        if ( row.name == attribute ) return true;
+    }
+    return false;
 }
 
 }   // end atomic
