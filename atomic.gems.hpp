@@ -1,9 +1,8 @@
 #pragma once
 
-#define assert(condition) ((void)0)
+// #define assert(condition) ((void)0)
 
 #include <string>
-#include <compare>
 #include <atomicassets/atomicassets.hpp>
 #include <eosio.token/eosio.token.hpp>
 
@@ -14,7 +13,27 @@ const name ATOMIC_ASSETS_CONTRACT = "atomicassets"_n;
 struct nft {
     name collection_name;
     int32_t template_id;
-    friend auto operator<=>(const nft&, const nft&) = default;
+    friend auto operator<(const nft& nft1, const nft& nft2) {
+        if (nft1.collection_name != nft2.collection_name) return nft1.collection_name < nft2.collection_name;
+        return nft1.template_id < nft2.template_id;
+    };
+    friend bool operator==(const nft& nft1, const nft& nft2) {
+        return nft1.collection_name == nft2.collection_name && nft1.template_id == nft2.template_id;
+    };
+};
+
+struct nft_extra {
+    name collection_name;
+    int32_t template_id;
+    name schema_name;
+    friend auto operator<(const nft_extra& nft1, const nft_extra& nft2) {
+        if (nft1.collection_name != nft2.collection_name) return nft1.collection_name < nft2.collection_name;
+        if (nft1.template_id != nft2.template_id) return nft1.template_id < nft2.template_id;
+        return nft1.schema_name < nft2.schema_name;
+    };
+    friend bool operator==(const nft_extra& nft1, const nft_extra& nft2) {
+        return nft1.collection_name == nft2.collection_name && nft1.template_id == nft2.template_id && nft1.schema_name == nft2.schema_name;
+    };
 };
 
 void transfer_nft( const name from, const name to, const vector<uint64_t> asset_ids, const string memo )
@@ -55,11 +74,6 @@ atomicassets::collections_s get_collection( const name collection_name )
     return _collections.get( collection_name.value, "get_collection: `collection_name` does not exist" );
 }
 
-double get_market_fee( const name collection_name )
-{
-    return get_collection( collection_name ).market_fee;
-}
-
 atomicassets::schemas_s get_schema( const name collection_name, const name schema_name )
 {
     atomicassets::schemas_t _schemas( ATOMIC_ASSETS_CONTRACT, collection_name.value );
@@ -82,6 +96,12 @@ atomic::nft get_nft( const name owner, const uint64_t asset_id )
 {
     atomicassets::assets_s my_asset = get_asset( owner, asset_id );
     return atomic::nft{ my_asset.collection_name, my_asset.template_id };
+}
+
+atomic::nft_extra get_nft_extra( const name owner, const uint64_t asset_id )
+{
+    atomicassets::assets_s my_asset = get_asset( owner, asset_id );
+    return atomic::nft_extra{ my_asset.collection_name, my_asset.template_id, my_asset.schema_name };
 }
 
 atomicdata::ATTRIBUTE_MAP get_template_immutable( const atomicassets::assets_s& asset )
@@ -225,24 +245,6 @@ bool attribute_exists( const vector<FORMAT> data, const FORMAT& format )
         [&](const auto& attr) { return attr.name == format.name && attr.type == format.type;}
     );
     return res != data.end();
-}
-
-bool attribute_exists( const name collection_name, const name schema_name, const string attribute )
-{
-    vector<atomicdata::FORMAT> format = atomic::get_schema( collection_name, schema_name ).format;
-    for ( const auto row : format ) {
-        if ( row.name == attribute ) return true;
-    }
-    return false;
-}
-
-bool has_attribute( const name collection_name, const name schema_name, const string attribute )
-{
-    vector<atomicdata::FORMAT> format = atomic::get_schema( collection_name, schema_name ).format;
-    for ( const auto row : format ) {
-        if ( row.name == attribute ) return true;
-    }
-    return false;
 }
 
 }   // end atomic
